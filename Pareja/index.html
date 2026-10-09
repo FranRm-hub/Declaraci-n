@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#fff2f5" />
+  <title>Una sorpresa para vos 💌</title>
+  <style>
+    :root {
+      --pixel: "Press Start 2P", "Courier New", monospace;
+      --pink: #d96f91;
+      --deep-pink: #b94f75;
+      --pale: #fff2f5;
+      --cream: #fffaf5;
+      --ink: #593b46;
+      --muted: #896c77;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      min-height: 100svh;
+      overflow-x: hidden;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 15%, rgba(255,255,255,.95) 0 2px, transparent 3px),
+        radial-gradient(circle at 83% 27%, rgba(255,255,255,.8) 0 3px, transparent 4px),
+        linear-gradient(155deg, #fff8f5 0%, #ffeaf0 52%, #fff4f3 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: max(18px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
+    }
+
+    button { font: inherit; -webkit-tap-highlight-color: transparent; }
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: 430px;
+      min-height: min(720px, calc(100svh - 36px));
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      animation: appear .65s ease both;
+      position: relative;
+    }
+    .screen.active { display: flex; }
+    .eyebrow {
+      font-size: .76rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--deep-pink);
+      margin: 0 0 12px;
+    }
+    h1, h2, p { margin-top: 0; }
+    h1 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 500;
+      font-size: clamp(2rem, 9vw, 2.8rem);
+      line-height: 1.12;
+      margin-bottom: 14px;
+    }
+    .intro {
+      max-width: 310px;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 1rem;
+      margin: 0 auto 24px;
+    }
+    .primary, .yes-button, .no-button {
+      border: 0;
+      border-radius: 999px;
+      min-height: 50px;
+      padding: 14px 24px;
+      cursor: pointer;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+      touch-action: manipulation;
+    }
+    .primary, .yes-button {
+      color: white;
+      background: linear-gradient(135deg, #df83a0, #c85e82);
+      box-shadow: 0 8px 20px rgba(190, 82, 121, .2);
+    }
+    .primary:active, .yes-button:active { transform: scale(.97); }
+    .primary:hover, .yes-button:hover { box-shadow: 0 10px 24px rgba(190, 82, 121, .28); }
+
+    /* Sobre */
+    .envelope-wrap {
+      width: min(78vw, 290px);
+      height: 205px;
+      position: relative;
+      margin: 8px 0 30px;
+      perspective: 900px;
+      filter: drop-shadow(0 18px 20px rgba(171, 92, 118, .13));
+    }
+    .envelope {
+      position: absolute;
+      inset: 30px 0 0;
+      border-radius: 10px;
+      background: #f5b9ca;
+      overflow: visible;
+    }
+    .envelope::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(145deg, #f9d1dc, #ed9eb6);
+      clip-path: polygon(0 0, 50% 60%, 100% 0, 100% 100%, 0 100%);
+      border-radius: 10px;
+      z-index: 3;
+    }
+    .envelope::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(35deg, #f6c5d2, #fbe0e6);
+      clip-path: polygon(0 100%, 50% 45%, 100% 100%);
+      border-radius: 0 0 10px 10px;
+      z-index: 4;
+    }
+    .flap {
+      position: absolute;
+      inset: 0 0 auto;
+      height: 125px;
+      background: #e99ab2;
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      transform-origin: top center;
+      transition: transform .75s ease;
+      z-index: 5;
+    }
+    .seal {
+      position: absolute;
+      z-index: 6;
+      top: 95px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #c85e82;
+      color: white;
+      font-size: 22px;
+      box-shadow: 0 4px 12px #bd64825a;
+      transition: opacity .3s ease, transform .4s ease;
+    }
+    .letter-peek {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      top: 4px;
+      height: 145px;
+      border-radius: 5px;
+      background: #fffaf5;
+      transition: transform .8s ease;
+      z-index: 2;
+    }
+    .envelope-wrap.open .flap { transform: rotateX(180deg); z-index: 1; }
+    .envelope-wrap.open .seal { opacity: 0; transform: translateX(-50%) scale(.4); }
+    .envelope-wrap.open .letter-peek { transform: translateY(-95px); }
+    .tiny-heart { position: absolute; color: #d66f91; opacity: .75; animation: float 4s ease-in-out infinite; }
+    .heart-one { top: 0; left: -10px; font-size: 24px; }
+    .heart-two { top: 20px; right: -15px; font-size: 18px; animation-delay: -1.5s; }
+    .heart-three { bottom: -5px; right: 18px; font-size: 14px; animation-delay: -2.3s; }
+
+    /* Carta */
+    .letter-card {
+      width: 100%;
+      background: rgba(255, 251, 247, .92);
+      border: 1px solid rgba(218, 153, 174, .45);
+      border-radius: 22px;
+      padding: 26px 22px 22px;
+      box-shadow: 0 15px 40px rgba(171, 92, 118, .1);
+      text-align: left;
+      position: relative;
+    }
+    .letter-card::before {
+      content: "♥";
+      position: absolute;
+      right: 20px;
+      top: 16px;
+      color: #e4a0b6;
+      font-size: 19px;
+    }
+    .letter-card h2 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 500;
+      font-size: 1.8rem;
+      color: var(--deep-pink);
+      margin: 0 28px 18px 0;
+    }
+    .letter-text {
+      white-space: pre-line;
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.8;
+      font-size: 1.03rem;
+      color: #684a55;
+      overflow-wrap: anywhere;
+      margin-bottom: 22px;
+    }
+    .signature {
+      color: var(--deep-pink);
+      font-family: Georgia, "Times New Roman", serif;
+      font-style: italic;
+      font-size: 1.12rem;
+      margin: 0 0 22px;
+    }
+    .next-wrap { width: 100%; text-align: center; }
+    .hint { color: #a47d8a; font-size: .8rem; margin-top: 14px; }
+
+    /* Pregunta */
+    .big-heart {
+      font-size: 58px;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 8px 10px rgba(200, 94, 130, .18));
+      animation: heartbeat 1.5s ease-in-out infinite;
+    }
+    .question-title { max-width: 360px; }
+    .button-area {
+      position: relative;
+      width: 100%;
+      height: 150px;
+      margin-top: 22px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: clamp(48px, 12vw, 90px);
+    }
+    .yes-button, .no-button {
+      position: relative;
+      top: 8px;
+      left: auto;
+      min-width: 112px;
+      font-weight: 700;
+      z-index: 1;
+    }
+    .no-button {
+      color: #8e6574;
+      background: rgba(255,255,255,.86);
+      border: 1px solid #edc5d1;
+      box-shadow: 0 5px 15px rgba(171, 92, 118, .08);
+    }
+    .no-button { --dx: 0px; --dy: 0px; transform: translate(var(--dx), var(--dy)); }
+    .no-button.running {
+      transition: transform .34s cubic-bezier(.34, 1.56, .64, 1), box-shadow .2s ease;
+      will-change: transform;
+      white-space: nowrap;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+    .final-note { font-size: .9rem; color: var(--muted); margin-top: 2px; }
+
+    /* Final feliz */
+    .success-message {
+      background: rgba(255,250,247,.9);
+      border: 3px solid #eab0c3;
+      border-radius: 26px;
+      padding: 28px 18px 24px;
+      box-shadow: 0 7px 0 #d98fa8, 0 20px 40px rgba(171, 92, 118, .14);
+    }
+    .success-message p { line-height: 1.7; color: var(--muted); margin-bottom: 0; }
+    .success-message h1 { font-size: clamp(1.7rem, 7.5vw, 2.2rem); margin-bottom: 8px; }
+    .perks-title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.05rem;
+      color: var(--deep-pink);
+      line-height: 1.4;
+      margin: 0 0 18px;
+    }
+    .perks {
+      list-style: none;
+      margin: 0 0 20px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: left;
+    }
+    .perks li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      border: 1px solid #f3d3dc;
+      border-radius: 16px;
+      padding: 11px 14px;
+      color: var(--ink);
+      font-size: .98rem;
+      line-height: 1.3;
+      box-shadow: 0 4px 0 #f0bfcd;
+      opacity: 0;
+      animation: perk-in .55s cubic-bezier(.34, 1.56, .64, 1) both;
+      animation-delay: calc(.35s + var(--i) * .5s);
+    }
+    .perks .num {
+      flex: 0 0 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #df83a0, #c85e82);
+      color: #fff;
+      font-weight: 700;
+      font-size: .85rem;
+    }
+    .perks .txt { flex: 1; min-width: 0; }
+    .perks .xp {
+      flex: 0 0 auto;
+      font-family: var(--pixel);
+      font-size: .5rem;
+      color: #fff;
+      background: #7fcf9a;
+      border-radius: 8px;
+      padding: 6px 7px;
+      box-shadow: 0 2px 0 #5fb37c;
+      white-space: nowrap;
+    }
+    .game-end { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .level-banner {
+      font-family: var(--pixel);
+      font-size: .62rem;
+      line-height: 1.6;
+      color: #b94f75;
+      background: #fff3c9;
+      border: 3px solid #f2cf6b;
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 4px 0 #e6b84a;
+      opacity: 0;
+      animation: perk-in .6s cubic-bezier(.34, 1.56, .64, 1) both, wiggle 2.4s ease-in-out 4s infinite;
+      animation-delay: 3s, 4s;
+    }
+    .stars { display: block; font-size: 1.1rem; letter-spacing: 4px; margin-bottom: 4px; }
+    .xp-wrap { width: 100%; opacity: 0; animation: perk-in .5s ease both; animation-delay: 3.4s; }
+    .xp-label {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--pixel);
+      font-size: .55rem;
+      color: var(--deep-pink);
+      margin-bottom: 8px;
+    }
+    .xp-bar {
+      height: 22px;
+      background: #fff;
+      border: 3px solid #eab0c3;
+      border-radius: 12px;
+      overflow: hidden;
+      padding: 2px;
+    }
+    .xp-fill {
+      height: 100%;
+      width: 0;
+      border-radius: 7px;
+      background: repeating-linear-gradient(90deg, #f08fae 0 12px, #e0678f 12px 14px);
+      animation: fill-bar 1.8s steps(12) forwards;
+      animation-delay: 3.7s;
+    }
+    .players {
+      font-family: var(--pixel);
+      font-size: .55rem;
+      line-height: 1.8;
+      color: var(--muted);
+      opacity: 0;
+      animation: perk-in .5s ease both;
+      animation-delay: 5.6s;
+    }
+    .players b { color: var(--deep-pink); font-weight: normal; }
+    .start-btn {
+      font-family: var(--pixel);
+      font-size: .7rem;
+      color: #fff;
+      background: linear-gradient(180deg, #f08fae, #d9648c);
+      border: 0;
+      border-radius: 14px;
+      padding: 16px 20px;
+      box-shadow: 0 5px 0 #b94f75;
+      cursor: pointer;
+      touch-action: manipulation;
+      opacity: 0;
+      animation: perk-in .5s ease both, blink 1.2s ease-in-out 6.4s infinite;
+      animation-delay: 6.1s, 6.4s;
+    }
+    .start-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #b94f75; }
+    .start-btn.done { animation: none; opacity: 1; background: #7fcf9a; box-shadow: 0 5px 0 #5fb37c; }
+    .saved {
+      font-family: var(--pixel);
+      font-size: .55rem;
+      line-height: 1.9;
+      color: var(--deep-pink);
+      margin: 0;
+      animation: perk-in .5s ease both;
+    }
+    @keyframes fill-bar { to { width: 100%; } }
+    @keyframes blink { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+    @keyframes wiggle { 0%, 100% { rotate: 0deg; } 25% { rotate: -2deg; } 75% { rotate: 2deg; } }
+    @keyframes perk-in {
+      from { opacity: 0; transform: translateY(14px) scale(.92); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .confetti-heart {
+      position: fixed;
+      top: -30px;
+      pointer-events: none;
+      z-index: 20;
+      animation: fall linear forwards;
+    }
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(-6deg); }
+      50% { transform: translateY(-10px) rotate(8deg); }
+    }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      12% { transform: scale(1.08); }
+      22% { transform: scale(1); }
+      34% { transform: scale(1.05); }
+    }
+    @keyframes fall {
+      to { transform: translateY(110svh) rotate(540deg); opacity: .2; }
+    }
+    @media (max-height: 650px) {
+      .screen { min-height: auto; padding: 12px 0; }
+      .envelope-wrap { transform: scale(.84); margin: -2px 0 8px; }
+      .letter-card { padding: 20px 18px 16px; }
+      .letter-text { line-height: 1.6; font-size: .97rem; }
+      .button-area { height: 125px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+  <main>
+    <!-- PANTALLA 1: SOBRE -->
+    <section class="screen active" id="screen-envelope" aria-labelledby="intro-title">
+      <p class="eyebrow">Una pequeña sorpresa para vos</p>
+      <h1 id="intro-title">Te llegó algo<br>especial 💌</h1>
+      <p class="intro">Hay cosas que a veces cuesta decir en voz alta… así que preparé algo para vos.</p>
+      <div class="envelope-wrap" id="envelope" aria-label="Sobre romántico">
+        <span class="tiny-heart heart-one">♥</span>
+        <span class="tiny-heart heart-two">♥</span>
+        <span class="tiny-heart heart-three">♥</span>
+        <div class="letter-peek"></div>
+        <div class="envelope">
+          <div class="flap"></div>
+          <div class="seal">♥</div>
+        </div>
+      </div>
+      <button class="primary" id="open-letter">Abrir mi carta ♡</button>
+      <p class="hint">Hecha con cariño, especialmente para vos.</p>
+    </section>
+
+    <!-- PANTALLA 2: CARTA. Editá el texto dentro de #letter-copy -->
+    <section class="screen" id="screen-letter" aria-labelledby="letter-heading">
+      <p class="eyebrow">De mí, para vos</p>
+      <article class="letter-card">
+        <h2 id="letter-heading">Quería decirte algo…</h2>
+        <div class="letter-text" id="letter-copy">Desde que llegaste a mi vida, hay cosas que se sienten diferentes. Me gusta tu forma de ser, tu sonrisa y esa manera tan tuya de hacer que hasta los momentos más simples se vuelvan especiales.
+
+No sé si existen las palabras perfectas para explicar todo lo que siento, pero sí sé que me hace feliz conocerte, compartir tiempo con vos y pensar en todos los momentos lindos que todavía nos quedan por vivir.
+
+Hoy quería tener un detalle con vos, porque te merecés saber lo especial que sos para mí. Esta flor es pequeñita comparada con todo lo que quisiera decirte, pero va acompañada de algo que sale de mi corazón.
+
+Gracias por ser vos. ❤️</div>
+        <p class="signature" id="signature">Con mucho cariño ♡</p>
+        <div class="next-wrap">
+          <button class="primary" id="go-question">Siguiente ❤️</button>
+        </div>
+      </article>
+    </section>
+
+    <!-- PANTALLA 3: PREGUNTA -->
+    <section class="screen" id="screen-question" aria-labelledby="question-heading">
+      <div class="big-heart" aria-hidden="true">💗</div>
+      <p class="eyebrow">Y ahora… una pregunta importante</p>
+      <h1 class="question-title" id="question-heading">¿Querés ser mi novia?</h1>
+      <div class="button-area" id="button-area">
+        <button class="yes-button" id="yes-button">Sí!</button>
+        <button class="no-button" id="no-button" aria-label="No">No :(</button>
+      </div>
+    </section>
+
+    <!-- PANTALLA 4: FINAL -->
+    <section class="screen" id="screen-success" aria-labelledby="success-heading">
+      <div class="success-message">
+        <div class="big-heart" aria-hidden="true">🎮</div>
+        <p class="eyebrow">¡Dijo que sí!</p>
+        <h1 id="success-heading">Ventajas desbloqueadas</h1>
+        <p class="perks-title">al aceptar salir conmigo 😎</p>
+        <ul class="perks">
+          <li style="--i:0"><span class="num">1</span><span class="txt">Soy fachero</span><span class="xp">+100 XP</span></li>
+          <li style="--i:1"><span class="num">2</span><span class="txt">Simpático, chistoso, carismático</span><span class="xp">+100 XP</span></li>
+          <li style="--i:2"><span class="num">3</span><span class="txt">Buen gusto musical</span><span class="xp">+100 XP</span></li>
+          <li style="--i:3"><span class="num">4</span><span class="txt">Alto</span><span class="xp">+100 XP</span></li>
+          <li style="--i:4"><span class="num">5</span><span class="txt">Pijón</span><span class="xp">+100 XP</span></li>
+        </ul>
+        <div class="game-end">
+          <div class="level-banner"><span class="stars" aria-hidden="true">⭐⭐⭐</span>¡NIVEL COMPLETADO!</div>
+          <div class="xp-wrap">
+            <div class="xp-label"><span>NIVEL DE AMOR</span><span>MAX 💗</span></div>
+            <div class="xp-bar"><div class="xp-fill"></div></div>
+          </div>
+          <div class="players"><b>JUGADOR 1</b> 🎮 + <b>JUGADORA 2</b> 🎀<br>= equipo imparable 💞</div>
+          <button class="start-btn" id="start-btn">▶ PRESS START</button>
+          <p class="saved" id="saved" hidden>💾 PARTIDA GUARDADA<br>Nueva aventura juntos ✨</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const screens = {
+      envelope: document.getElementById('screen-envelope'),
+      letter: document.getElementById('screen-letter'),
+      question: document.getElementById('screen-question'),
+      success: document.getElementById('screen-success')
+    };
+
+    function showScreen(name) {
+      Object.values(screens).forEach(screen => screen.classList.remove('active'));
+      screens[name].classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById('open-letter').addEventListener('click', () => {
+      const envelope = document.getElementById('envelope');
+      envelope.classList.add('open');
+      const button = document.getElementById('open-letter');
+      button.disabled = true;
+      button.textContent = 'Abriendo… 💌';
+      setTimeout(() => showScreen('letter'), 650);
+    });
+
+    document.getElementById('go-question').addEventListener('click', () => {
+      showScreen('question');
+    });
+
+    const noButton = document.getElementById('no-button');
+    const yesButton = document.getElementById('yes-button');
+    const buttonArea = document.getElementById('button-area');
+    let noMoves = 0;
+    let offX = 0, offY = 0;           // desplazamiento actual (transform)
+    const noTexts = ['¿Segura? 🥺', 'Pero... 🥹', 'Porfis 🥺', 'No :('];
+
+    function viewportSize() {
+      const vv = window.visualViewport;
+      return { w: vv ? vv.width : window.innerWidth, h: vv ? vv.height : window.innerHeight };
+    }
+
+    function overlapsRect(x, y, w, h, r, margin) {
+      return x < r.right + margin && x + w > r.left - margin &&
+             y < r.bottom + margin && y + h > r.top - margin;
+    }
+
+    function applyOffset() {
+      noButton.style.setProperty('--dx', `${offX}px`);
+      noButton.style.setProperty('--dy', `${offY}px`);
+    }
+
+    function moveNoButton() {
+      const pad = 14;
+      const rect = noButton.getBoundingClientRect();
+      const w = rect.width, h = rect.height;
+      const yesRect = yesButton.getBoundingClientRect();
+      const areaRect = buttonArea.getBoundingClientRect();
+      const vp = viewportSize();
+
+      // Posición "natural" del botón (sin desplazamiento): sirve de referencia fija.
+      const baseX = rect.left - offX;
+      const baseY = rect.top - offY;
+
+      if (noMoves === 0) {
+        // Fijamos el ancho para que al cambiar el texto "Sí" no se corra de lugar.
+        noButton.style.width = `${w}px`;
+        noButton.classList.add('running');
+      }
+
+      // Zona permitida (coordenadas de pantalla), siempre visible.
+      const minX = Math.max(pad, areaRect.left - 40);
+      const maxX = Math.max(minX, Math.min(vp.w - w - pad, areaRect.right + 40 - w));
+      const minY = Math.max(pad, areaRect.top - 50);
+      const maxY = Math.max(minY, Math.min(vp.h - h - pad, areaRect.bottom + 30 - h));
+
+      const curX = rect.left, curY = rect.top;
+      let best = null;
+
+      // Salto corto: 70 a 120 px en una dirección al azar.
+      for (let i = 0; i < 80; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 70 + Math.random() * 50;
+        const x = Math.max(minX, Math.min(curX + Math.cos(angle) * dist, maxX));
+        const y = Math.max(minY, Math.min(curY + Math.sin(angle) * dist, maxY));
+        if (Math.hypot(x - curX, y - curY) < 45) continue;   // que se note el escape
+        if (overlapsRect(x, y, w, h, yesRect, 14)) continue; // sin tapar el "Sí"
+        best = { x, y };
+        break;
+      }
+
+      // Si estaba arrinconado, elegimos el punto libre más lejano de la zona.
+      if (!best) {
+        let far = -1;
+        for (let i = 0; i < 60; i++) {
+          const x = minX + Math.random() * (maxX - minX);
+          const y = minY + Math.random() * (maxY - minY);
+          if (overlapsRect(x, y, w, h, yesRect, 14)) continue;
+          const d = Math.hypot(x - curX, y - curY);
+          if (d > far) { far = d; best = { x, y }; }
+        }
+      }
+      if (!best) best = { x: curX, y: curY };
+
+      offX = best.x - baseX;
+      offY = best.y - baseY;
+      applyOffset();
+      noMoves++;
+      noButton.textContent = noTexts[(noMoves - 1) % noTexts.length];
+    }
+
+    noButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      moveNoButton();
+    });
+
+    // Si cambia la ventana (barra de Android, rotación), lo mantenemos visible.
+    function keepNoButtonVisible() {
+      if (noMoves === 0) return;
+      const pad = 14;
+      const vp = viewportSize();
+      const rect = noButton.getBoundingClientRect();
+      const x = Math.max(pad, Math.min(rect.left, vp.w - rect.width - pad));
+      const y = Math.max(pad, Math.min(rect.top, vp.h - rect.height - pad));
+      offX += x - rect.left;
+      offY += y - rect.top;
+      applyOffset();
+    }
+    window.addEventListener('resize', keepNoButtonVisible);
+
+    document.getElementById('yes-button').addEventListener('click', () => {
+      showScreen('success');
+      launchHearts();
+    });
+
+    document.getElementById('start-btn').addEventListener('click', (e) => {
+      const btn = e.currentTarget;
+      btn.textContent = '✓ LISTO';
+      btn.classList.add('done');
+      btn.disabled = true;
+      document.getElementById('saved').hidden = false;
+      launchHearts();
+    });
+
+    function launchHearts() {
+      const symbols = ['💗', '💖', '💕', '❤️', '🌸', '✨'];
+      for (let i = 0; i < 34; i++) {
+        const heart = document.createElement('span');
+        heart.className = 'confetti-heart';
+        heart.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+        heart.style.left = `${Math.random() * 100}vw`;
+        heart.style.animationDuration = `${3 + Math.random() * 3}s`;
+        heart.style.animationDelay = `${Math.random() * 1.5}s`;
+        heart.style.fontSize = `${16 + Math.random() * 18}px`;
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 7500);
+      }
+    }
+  </script>
+</body>
+</html>
